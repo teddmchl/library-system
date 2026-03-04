@@ -1,0 +1,151 @@
+<div class="page-member-detail">
+
+  <div class="breadcrumb">
+    <a href="/members">Members</a>
+    <span class="bc-sep">›</span>
+    <span><%= member.name %></span>
+  </div>
+
+  <div class="member-detail-layout">
+
+    <!-- Sidebar -->
+    <aside class="member-detail-aside">
+      <div class="member-card">
+        <div class="member-card-number"><%= member.memberNumber %></div>
+        <div class="member-card-avatar">
+          <%= member.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() %>
+        </div>
+        <div class="member-card-name"><%= member.name %></div>
+        <div class="member-card-since">Member since <%= member.memberSince?.toLocaleDateString('en-GB', {month:'long', year:'numeric'}) %></div>
+        <span class="status-badge status-<%= member.status %> mt-1"><%= member.status %></span>
+      </div>
+
+      <div class="member-meta">
+        <div class="meta-row">
+          <span class="meta-key">Email</span>
+          <span class="meta-val"><%= member.email %></span>
+        </div>
+        <% if (member.phone) { %>
+        <div class="meta-row">
+          <span class="meta-key">Phone</span>
+          <span class="meta-val"><%= member.phone %></span>
+        </div>
+        <% } %>
+        <% if (member.address) { %>
+        <div class="meta-row">
+          <span class="meta-key">Address</span>
+          <span class="meta-val"><%= member.address %></span>
+        </div>
+        <% } %>
+        <% if (member.notes) { %>
+        <div class="meta-row">
+          <span class="meta-key">Notes</span>
+          <span class="meta-val"><%= member.notes %></span>
+        </div>
+        <% } %>
+      </div>
+
+      <div class="member-actions">
+        <a href="/loans/new?member=<%= member._id %>" class="btn-primary btn-full">Check Out a Book</a>
+        <a href="/members/<%= member._id %>/edit" class="btn-secondary btn-full">Edit Member</a>
+        <form method="POST" action="/members/<%= member._id %>?_method=DELETE" onsubmit="return confirm('Remove this member from records?')">
+          <button type="submit" class="btn-danger btn-full">Remove Member</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="member-detail-main">
+
+      <div class="member-stats-row">
+        <div class="mstat">
+          <div class="mstat-num"><%= activeLoans.length %></div>
+          <div class="mstat-label">Books Currently Out</div>
+        </div>
+        <div class="mstat">
+          <div class="mstat-num"><%= loanHistory.length %></div>
+          <div class="mstat-label">Books Returned</div>
+        </div>
+        <div class="mstat">
+          <div class="mstat-num <%= activeLoans.filter(l=>l.isOverdue).length > 0 ? 'mstat-alert' : '' %>">
+            <%= activeLoans.filter(l=>l.isOverdue).length %>
+          </div>
+          <div class="mstat-label">Overdue</div>
+        </div>
+      </div>
+
+      <div class="detail-rule"><span></span><span class="rule-diamond">◆</span><span></span></div>
+
+      <!-- Active Loans -->
+      <section class="loans-section">
+        <h2 class="section-heading">Books Currently Out</h2>
+        <% if (activeLoans.length === 0) { %>
+          <p class="loans-empty">No books currently checked out.</p>
+        <% } else { %>
+          <table class="loans-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Borrowed</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% activeLoans.forEach(loan => { %>
+                <tr class="<%= loan.isOverdue ? 'row-overdue' : '' %>">
+                  <td><a href="/books/<%= loan.book._id %>"><%= loan.book.title %></a></td>
+                  <td class="text-muted"><%= loan.book.author %></td>
+                  <td><%= loan.borrowedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short'}) %></td>
+                  <td><%= loan.dueAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+                  <td>
+                    <% if (loan.isOverdue) { %>
+                      <span class="badge badge-overdue"><%= loan.daysOverdue %>d overdue</span>
+                    <% } else { %>
+                      <span class="badge badge-active"><%= loan.daysRemaining %>d left</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <form method="POST" action="/loans/<%= loan._id %>/return">
+                      <button type="submit" class="btn-return">Return</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </section>
+
+      <!-- Loan History -->
+      <% if (loanHistory.length > 0) { %>
+        <section class="loans-section">
+          <h2 class="section-heading">Reading History</h2>
+          <table class="loans-table loans-table--muted">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Borrowed</th>
+                <th>Returned</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% loanHistory.forEach(loan => { %>
+                <tr>
+                  <td><a href="/books/<%= loan.book._id %>"><%= loan.book.title %></a></td>
+                  <td class="text-muted"><%= loan.book.author %></td>
+                  <td><%= loan.borrowedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+                  <td><%= loan.returnedAt?.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) || '—' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </section>
+      <% } %>
+
+    </div>
+  </div>
+</div>

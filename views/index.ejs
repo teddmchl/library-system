@@ -1,0 +1,122 @@
+<div class="page-dashboard">
+
+  <!-- Hero / Page header -->
+  <section class="dash-hero">
+    <div class="dash-hero-text">
+      <p class="dash-eyebrow">Good morning</p>
+      <h1 class="dash-heading">Ashbrook Library</h1>
+      <p class="dash-tagline">Connecting readers with knowledge since 1891</p>
+    </div>
+    <div class="dash-date">
+      <div class="dash-date-day" id="js-day"></div>
+      <div class="dash-date-full" id="js-date"></div>
+    </div>
+  </section>
+
+  <div class="dash-rule"><span></span><span class="rule-diamond">◆</span><span></span></div>
+
+  <!-- Stats row -->
+  <section class="dash-stats">
+    <a href="/books" class="stat-card">
+      <div class="stat-number"><%= stats.totalBooks || 0 %></div>
+      <div class="stat-label">Volumes in Collection</div>
+    </a>
+    <a href="/members" class="stat-card">
+      <div class="stat-number"><%= stats.totalMembers || 0 %></div>
+      <div class="stat-label">Active Members</div>
+    </a>
+    <a href="/loans" class="stat-card">
+      <div class="stat-number"><%= stats.activeLoans || 0 %></div>
+      <div class="stat-label">Books on Loan</div>
+    </a>
+    <a href="/loans?status=overdue" class="stat-card stat-card--alert <% if(stats.overdueCount > 0){ %>has-overdue<% } %>">
+      <div class="stat-number"><%= stats.overdueCount || 0 %></div>
+      <div class="stat-label">Overdue Returns</div>
+    </a>
+  </section>
+
+  <!-- Two-column: recent books + overdue loans -->
+  <div class="dash-grid">
+
+    <!-- Recent Additions -->
+    <section class="dash-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Recently Added</h2>
+        <a href="/books/new" class="panel-action">+ Add Book</a>
+      </div>
+      <% if (recentBooks.length === 0) { %>
+        <p class="empty-state">No books in the catalogue yet. <a href="/books/new">Add one →</a></p>
+      <% } else { %>
+        <div class="book-list">
+          <% recentBooks.forEach(book => { %>
+            <a href="/books/<%= book._id %>" class="book-list-item">
+              <div class="book-spine" style="background: <%= book.coverColor %>"></div>
+              <div class="book-info">
+                <div class="book-title-sm"><%= book.title %></div>
+                <div class="book-meta-sm"><%= book.author %> · <span class="genre-tag"><%= book.genre %></span></div>
+              </div>
+              <div class="book-avail <%= book.availableCopies > 0 ? 'avail-yes' : 'avail-no' %>">
+                <%= book.availableCopies > 0 ? 'Available' : 'On Loan' %>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+        <a href="/books" class="panel-footer-link">Browse full catalogue →</a>
+      <% } %>
+    </section>
+
+    <!-- Overdue Loans -->
+    <section class="dash-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Overdue Returns</h2>
+        <a href="/loans?status=overdue" class="panel-action">View all</a>
+      </div>
+      <% if (overdueLoans.length === 0) { %>
+        <div class="all-clear">
+          <span class="all-clear-icon">✓</span>
+          <p>All loans are current. No overdue books.</p>
+        </div>
+      <% } else { %>
+        <div class="overdue-list">
+          <% overdueLoans.forEach(loan => { %>
+            <div class="overdue-item">
+              <div class="overdue-info">
+                <div class="overdue-title"><%= loan.book?.title || 'Unknown' %></div>
+                <div class="overdue-member"><%= loan.member?.name || 'Unknown' %></div>
+              </div>
+              <div class="overdue-days">
+                <span class="days-num"><%= loan.daysOverdue %></span>
+                <span class="days-label">days<br>overdue</span>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+  </div>
+
+  <!-- Genre breakdown -->
+  <% if (genreBreakdown && genreBreakdown.length > 0) { %>
+  <section class="dash-genres">
+    <h2 class="section-title">Collection by Genre</h2>
+    <div class="genre-grid">
+      <% genreBreakdown.forEach(g => { %>
+        <a href="/books?genre=<%= g._id %>" class="genre-chip">
+          <span class="genre-name"><%= g._id %></span>
+          <span class="genre-count"><%= g.count %></span>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+</div>
+
+<script>
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('js-day').textContent = days[d.getDay()];
+  document.getElementById('js-date').textContent = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+</script>

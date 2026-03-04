@@ -1,0 +1,109 @@
+<div class="page-form">
+
+  <div class="breadcrumb">
+    <a href="/books">Catalogue</a>
+    <span class="bc-sep">›</span>
+    <span>Add Book</span>
+  </div>
+
+  <div class="form-header">
+    <h1 class="page-title">Add to Catalogue</h1>
+    <p class="page-subtitle">Register a new volume in the Ashbrook collection</p>
+  </div>
+
+  <form method="POST" action="/books" class="book-form">
+
+    <div class="form-section">
+      <h2 class="form-section-title">Book Information</h2>
+
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="title">Title <span class="req">*</span></label>
+          <input type="text" id="title" name="title" value="<%= book.title || '' %>" required placeholder="Full title of the work" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="author">Author <span class="req">*</span></label>
+          <input type="text" id="author" name="author" value="<%= book.author || '' %>" required placeholder="Last name, First name" />
+        </div>
+      </div>
+
+      <div class="form-row form-row--cols">
+        <div class="form-group">
+          <label for="isbn">ISBN <span class="req">*</span></label>
+          <input type="text" id="isbn" name="isbn" value="<%= book.isbn || '' %>" required placeholder="978-0-000-00000-0" />
+        </div>
+        <div class="form-group">
+          <label for="genre">Genre <span class="req">*</span></label>
+          <select id="genre" name="genre" required>
+            <option value="">Select a genre</option>
+            <% genres.forEach(g => { %>
+              <option value="<%= g %>" <%= book.genre === g ? 'selected' : '' %>><%= g %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4" placeholder="A brief synopsis or notes about the book…"><%= book.description || '' %></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-rule"></div>
+
+    <div class="form-section">
+      <h2 class="form-section-title">Publication Details</h2>
+
+      <div class="form-row form-row--cols">
+        <div class="form-group">
+          <label for="publisher">Publisher</label>
+          <input type="text" id="publisher" name="publisher" value="<%= book.publisher || '' %>" placeholder="Publishing house" />
+        </div>
+        <div class="form-group">
+          <label for="publishedYear">Year Published</label>
+          <input type="number" id="publishedYear" name="publishedYear" value="<%= book.publishedYear || '' %>" min="1000" max="<%= new Date().getFullYear() %>" placeholder="e.g. 1984" />
+        </div>
+        <div class="form-group">
+          <label for="pages">Pages</label>
+          <input type="number" id="pages" name="pages" value="<%= book.pages || '' %>" min="1" placeholder="e.g. 320" />
+        </div>
+      </div>
+
+      <div class="form-row form-row--cols">
+        <div class="form-group">
+          <label for="language">Language</label>
+          <input type="text" id="language" name="language" value="<%= book.language || 'English' %>" />
+        </div>
+        <div class="form-group">
+          <label for="copies">Number of Copies <span class="req">*</span></label>
+          <input type="number" id="copies" name="copies" value="<%= book.copies || 1 %>" min="1" required />
+        </div>
+        <div class="form-group">
+          <label for="location">Shelf Location</label>
+          <input type="text" id="location" name="location" value="<%= book.location || 'General' %>" placeholder="e.g. Fiction A–F" />
+        </div>
+      </div>
+
+      <div class="form-row form-row--cols">
+        <div class="form-group">
+          <label for="coverColor">Spine Colour</label>
+          <div class="color-picker-row">
+            <input type="color" id="coverColor" name="coverColor" value="<%= book.coverColor || '#8B6F47' %>" class="color-picker" />
+            <span class="color-hint">Used for visual identification</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="/books" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Add to Catalogue</button>
+    </div>
+
+  </form>
+</div>

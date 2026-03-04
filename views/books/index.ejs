@@ -1,0 +1,81 @@
+<div class="page-catalogue">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">The Catalogue</h1>
+      <p class="page-subtitle"><%= books.length %> volume<%= books.length !== 1 ? 's' : '' %> found</p>
+    </div>
+    <a href="/books/new" class="btn-primary">+ Add Book</a>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <form class="filter-bar" method="GET" action="/books">
+    <div class="search-field">
+      <span class="search-icon">⌕</span>
+      <input
+        type="text"
+        name="q"
+        placeholder="Search by title, author, or ISBN…"
+        value="<%= query.q || '' %>"
+        class="search-input"
+      />
+    </div>
+
+    <select name="genre" class="filter-select">
+      <option value="">All Genres</option>
+      <% genres.forEach(g => { %>
+        <option value="<%= g %>" <%= query.genre === g ? 'selected' : '' %>><%= g %></option>
+      <% }) %>
+    </select>
+
+    <select name="available" class="filter-select">
+      <option value="">All Availability</option>
+      <option value="1" <%= query.available === '1' ? 'selected' : '' %>>Available Now</option>
+    </select>
+
+    <select name="sort" class="filter-select">
+      <option value="title" <%= (query.sort||'title') === 'title' ? 'selected' : '' %>>Sort: Title A–Z</option>
+      <option value="author" <%= query.sort === 'author' ? 'selected' : '' %>>Sort: Author A–Z</option>
+      <option value="newest" <%= query.sort === 'newest' ? 'selected' : '' %>>Sort: Newest First</option>
+      <option value="oldest" <%= query.sort === 'oldest' ? 'selected' : '' %>>Sort: Oldest First</option>
+    </select>
+
+    <button type="submit" class="btn-secondary">Search</button>
+    <% if (query.q || query.genre || query.available) { %>
+      <a href="/books" class="btn-clear">Clear</a>
+    <% } %>
+  </form>
+
+  <!-- Books Grid -->
+  <% if (books.length === 0) { %>
+    <div class="empty-catalogue">
+      <p class="empty-heading">No books found</p>
+      <p class="empty-sub">Try adjusting your search, or <a href="/books/new">add a new book</a>.</p>
+    </div>
+  <% } else { %>
+    <div class="books-grid">
+      <% books.forEach(book => { %>
+        <a href="/books/<%= book._id %>" class="book-card">
+          <div class="book-card-spine">
+            <div class="spine-bar" style="background: <%= book.coverColor %>"></div>
+          </div>
+          <div class="book-card-body">
+            <div class="book-card-genre"><%= book.genre %></div>
+            <h3 class="book-card-title"><%= book.title %></h3>
+            <p class="book-card-author"><%= book.author %></p>
+            <% if (book.publishedYear) { %>
+              <p class="book-card-year"><%= book.publishedYear %></p>
+            <% } %>
+            <div class="book-card-footer">
+              <span class="copies-badge">
+                <%= book.availableCopies %>/<%= book.copies %> available
+              </span>
+              <span class="status-dot <%= book.availableCopies > 0 ? 'dot-green' : 'dot-red' %>"></span>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+</div>

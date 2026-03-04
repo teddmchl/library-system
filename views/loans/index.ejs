@@ -1,0 +1,83 @@
+<div class="page-loans">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Loans</h1>
+      <p class="page-subtitle"><%= loans.length %> record<%= loans.length !== 1 ? 's' : '' %></p>
+    </div>
+    <a href="/loans/new" class="btn-primary">+ Check Out</a>
+  </div>
+
+  <!-- Status filter tabs -->
+  <div class="tab-bar">
+    <a href="/loans?status=active"   class="tab <%= activeStatus === 'active'   ? 'tab-active' : '' %>">Active</a>
+    <a href="/loans?status=overdue"  class="tab <%= activeStatus === 'overdue'  ? 'tab-active' : '' %>">Overdue</a>
+    <a href="/loans?status=returned" class="tab <%= activeStatus === 'returned' ? 'tab-active' : '' %>">Returned</a>
+    <a href="/loans?status=all"      class="tab <%= activeStatus === 'all'      ? 'tab-active' : '' %>">All</a>
+  </div>
+
+  <% if (loans.length === 0) { %>
+    <div class="empty-catalogue">
+      <p class="empty-heading">No loans found</p>
+      <% if (activeStatus === 'overdue') { %>
+        <p class="empty-sub">No overdue books. All loans are current.</p>
+      <% } else { %>
+        <p class="empty-sub"><a href="/loans/new">Check out a book →</a></p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="loans-table-wrap">
+      <table class="loans-table loans-table--full">
+        <thead>
+          <tr>
+            <th>Book</th>
+            <th>Member</th>
+            <th>Borrowed</th>
+            <th>Due</th>
+            <% if (activeStatus === 'returned' || activeStatus === 'all') { %>
+              <th>Returned</th>
+            <% } %>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% loans.forEach(loan => { %>
+            <tr class="<%= (loan.status === 'overdue' || loan.isOverdue) ? 'row-overdue' : '' %>">
+              <td>
+                <a href="/books/<%= loan.book?._id %>"><%= loan.book?.title || '—' %></a>
+                <div class="text-muted text-sm"><%= loan.book?.author || '' %></div>
+              </td>
+              <td>
+                <a href="/members/<%= loan.member?._id %>"><%= loan.member?.name || '—' %></a>
+                <div class="text-muted text-sm"><%= loan.member?.memberNumber || '' %></div>
+              </td>
+              <td><%= loan.borrowedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+              <td><%= loan.dueAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+              <% if (activeStatus === 'returned' || activeStatus === 'all') { %>
+                <td><%= loan.returnedAt ? loan.returnedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—' %></td>
+              <% } %>
+              <td>
+                <% if (loan.status === 'returned') { %>
+                  <span class="badge badge-returned">Returned</span>
+                <% } else if (loan.isOverdue || loan.status === 'overdue') { %>
+                  <span class="badge badge-overdue"><%= loan.daysOverdue %>d overdue</span>
+                <% } else { %>
+                  <span class="badge badge-active"><%= loan.daysRemaining %>d left</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (loan.status !== 'returned') { %>
+                  <form method="POST" action="/loans/<%= loan._id %>/return">
+                    <button type="submit" class="btn-return">Return</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+</div>

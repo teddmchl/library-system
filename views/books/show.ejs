@@ -1,0 +1,153 @@
+<div class="page-book-detail">
+
+  <div class="breadcrumb">
+    <a href="/books">Catalogue</a>
+    <span class="bc-sep">›</span>
+    <span><%= book.title %></span>
+  </div>
+
+  <div class="book-detail-layout">
+
+    <!-- Left: Book "cover" -->
+    <aside class="book-detail-aside">
+      <div class="book-cover-display">
+        <div class="cover-spine" style="background: <%= book.coverColor %>"></div>
+        <div class="cover-face" style="border-left: 6px solid <%= book.coverColor %>">
+          <div class="cover-genre"><%= book.genre %></div>
+          <div class="cover-title"><%= book.title %></div>
+          <div class="cover-author"><%= book.author %></div>
+          <% if (book.publishedYear) { %>
+            <div class="cover-year"><%= book.publishedYear %></div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="book-detail-meta">
+        <div class="meta-row">
+          <span class="meta-key">ISBN</span>
+          <span class="meta-val"><%= book.isbn %></span>
+        </div>
+        <% if (book.publisher) { %>
+        <div class="meta-row">
+          <span class="meta-key">Publisher</span>
+          <span class="meta-val"><%= book.publisher %></span>
+        </div>
+        <% } %>
+        <% if (book.pages) { %>
+        <div class="meta-row">
+          <span class="meta-key">Pages</span>
+          <span class="meta-val"><%= book.pages %></span>
+        </div>
+        <% } %>
+        <div class="meta-row">
+          <span class="meta-key">Language</span>
+          <span class="meta-val"><%= book.language %></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Location</span>
+          <span class="meta-val"><%= book.location %></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Copies</span>
+          <span class="meta-val"><%= book.availableCopies %> of <%= book.copies %> available</span>
+        </div>
+      </div>
+
+      <div class="book-detail-actions">
+        <% if (book.availableCopies > 0) { %>
+          <a href="/loans/new?book=<%= book._id %>" class="btn-primary btn-full">Check Out This Book</a>
+        <% } else { %>
+          <button class="btn-primary btn-full" disabled>All Copies on Loan</button>
+        <% } %>
+        <a href="/books/<%= book._id %>/edit" class="btn-secondary btn-full">Edit Details</a>
+        <form method="POST" action="/books/<%= book._id %>?_method=DELETE" onsubmit="return confirm('Remove this book from the catalogue?')">
+          <button type="submit" class="btn-danger btn-full">Remove from Catalogue</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Right: Details -->
+    <div class="book-detail-main">
+      <div class="book-detail-header">
+        <span class="detail-genre-tag"><%= book.genre %></span>
+        <h1 class="detail-title"><%= book.title %></h1>
+        <p class="detail-author">by <em><%= book.author %></em></p>
+      </div>
+
+      <% if (book.description) { %>
+        <div class="book-description">
+          <p><%= book.description %></p>
+        </div>
+      <% } %>
+
+      <div class="detail-rule"><span></span><span class="rule-diamond">◆</span><span></span></div>
+
+      <!-- Active Loans -->
+      <section class="loans-section">
+        <h2 class="section-heading">Currently On Loan</h2>
+        <% if (activeLoans.length === 0) { %>
+          <p class="loans-empty">All copies are available in the library.</p>
+        <% } else { %>
+          <table class="loans-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Borrowed</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% activeLoans.forEach(loan => { %>
+                <tr class="<%= loan.isOverdue ? 'row-overdue' : '' %>">
+                  <td><a href="/members/<%= loan.member._id %>"><%= loan.member.name %></a></td>
+                  <td><%= loan.borrowedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+                  <td><%= loan.dueAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+                  <td>
+                    <% if (loan.isOverdue) { %>
+                      <span class="badge badge-overdue"><%= loan.daysOverdue %>d overdue</span>
+                    <% } else { %>
+                      <span class="badge badge-active"><%= loan.daysRemaining %>d left</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <form method="POST" action="/loans/<%= loan._id %>/return">
+                      <button type="submit" class="btn-return">Return</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </section>
+
+      <!-- Loan History -->
+      <% if (loanHistory.length > 0) { %>
+        <section class="loans-section">
+          <h2 class="section-heading">Loan History</h2>
+          <table class="loans-table loans-table--muted">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Borrowed</th>
+                <th>Returned</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% loanHistory.forEach(loan => { %>
+                <tr>
+                  <td><a href="/members/<%= loan.member._id %>"><%= loan.member.name %></a></td>
+                  <td><%= loan.borrowedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+                  <td><%= loan.returnedAt?.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) || '—' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </section>
+      <% } %>
+
+    </div>
+  </div>
+</div>

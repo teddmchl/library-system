@@ -1,0 +1,99 @@
+<div class="page-form">
+
+  <div class="breadcrumb">
+    <a href="/loans">Loans</a>
+    <span class="bc-sep">›</span>
+    <span>Check Out</span>
+  </div>
+
+  <div class="form-header">
+    <h1 class="page-title">Check Out a Book</h1>
+    <p class="page-subtitle">Loan period is 14 days from today</p>
+  </div>
+
+  <% if (books.length === 0) { %>
+    <div class="empty-catalogue" style="margin-top:2rem;">
+      <p class="empty-heading">No books available</p>
+      <p class="empty-sub">All books are currently on loan, or <a href="/books/new">add new stock</a>.</p>
+    </div>
+  <% } else if (members.length === 0) { %>
+    <div class="empty-catalogue" style="margin-top:2rem;">
+      <p class="empty-heading">No active members</p>
+      <p class="empty-sub"><a href="/members/new">Register a member</a> before checking out books.</p>
+    </div>
+  <% } else { %>
+
+  <form method="POST" action="/loans" class="book-form">
+
+    <div class="form-section">
+      <h2 class="form-section-title">Select Book</h2>
+
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="book">Book <span class="req">*</span></label>
+          <select id="book" name="book" required>
+            <option value="">— Choose a book —</option>
+            <% books.forEach(b => { %>
+              <option value="<%= b._id %>" <%= preselectedBook && preselectedBook.toString() === b._id.toString() ? 'selected' : '' %>>
+                <%= b.title %> — <%= b.author %> (<%= b.availableCopies %> available)
+              </option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-rule"></div>
+
+    <div class="form-section">
+      <h2 class="form-section-title">Select Member</h2>
+
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="member">Member <span class="req">*</span></label>
+          <select id="member" name="member" required>
+            <option value="">— Choose a member —</option>
+            <% members.forEach(m => { %>
+              <option value="<%= m._id %>" <%= preselectedMember && preselectedMember.toString() === m._id.toString() ? 'selected' : '' %>>
+                <%= m.name %> (<%= m.memberNumber %>)
+              </option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-rule"></div>
+
+    <div class="form-section">
+      <h2 class="form-section-title">Additional Notes</h2>
+      <div class="form-row">
+        <div class="form-group form-group--wide">
+          <label for="notes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="notes" name="notes" rows="2" placeholder="Any special notes about this loan…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkout-summary">
+      <div class="summary-label">Due date</div>
+      <div class="summary-value" id="js-due-date"></div>
+    </div>
+
+    <div class="form-actions">
+      <a href="/loans" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Confirm Check Out</button>
+    </div>
+
+  </form>
+  <% } %>
+
+</div>
+
+<script>
+  // Show calculated due date
+  const due = new Date();
+  due.setDate(due.getDate() + 14);
+  const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  document.getElementById('js-due-date').textContent = due.toLocaleDateString('en-GB', opts);
+</script>

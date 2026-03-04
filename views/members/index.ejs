@@ -1,0 +1,82 @@
+<div class="page-members">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Members</h1>
+      <p class="page-subtitle"><%= members.length %> member<%= members.length !== 1 ? 's' : '' %> found</p>
+    </div>
+    <a href="/members/new" class="btn-primary">+ New Member</a>
+  </div>
+
+  <!-- Search Bar -->
+  <form class="filter-bar" method="GET" action="/members">
+    <div class="search-field">
+      <span class="search-icon">⌕</span>
+      <input type="text" name="q" placeholder="Search by name, email, or member number…" value="<%= query.q || '' %>" class="search-input" />
+    </div>
+
+    <select name="status" class="filter-select">
+      <option value="">All Statuses</option>
+      <option value="active"    <%= query.status === 'active'    ? 'selected' : '' %>>Active</option>
+      <option value="suspended" <%= query.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
+      <option value="expired"   <%= query.status === 'expired'   ? 'selected' : '' %>>Expired</option>
+    </select>
+
+    <button type="submit" class="btn-secondary">Search</button>
+    <% if (query.q || query.status) { %>
+      <a href="/members" class="btn-clear">Clear</a>
+    <% } %>
+  </form>
+
+  <!-- Members Table -->
+  <% if (members.length === 0) { %>
+    <div class="empty-catalogue">
+      <p class="empty-heading">No members found</p>
+      <p class="empty-sub"><a href="/members/new">Register the first member →</a></p>
+    </div>
+  <% } else { %>
+    <div class="members-table-wrap">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Member No.</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Member Since</th>
+            <th>Active Loans</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% members.forEach(member => { %>
+            <tr class="member-row">
+              <td class="member-number"><%= member.memberNumber %></td>
+              <td class="member-name">
+                <a href="/members/<%= member._id %>"><%= member.name %></a>
+              </td>
+              <td class="member-email"><%= member.email %></td>
+              <td><%= member.memberSince?.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) %></td>
+              <td class="member-loans">
+                <% const count = loanMap[member._id.toString()] || 0 %>
+                <% if (count > 0) { %>
+                  <a href="/members/<%= member._id %>" class="loan-count-badge"><%= count %> book<%= count !== 1 ? 's' : '' %></a>
+                <% } else { %>
+                  <span class="loan-count-none">—</span>
+                <% } %>
+              </td>
+              <td>
+                <span class="status-badge status-<%= member.status %>"><%= member.status %></span>
+              </td>
+              <td class="row-actions">
+                <a href="/members/<%= member._id %>" class="row-link">View</a>
+                <a href="/members/<%= member._id %>/edit" class="row-link">Edit</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+</div>
