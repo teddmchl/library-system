@@ -99,6 +99,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Ashbrook Library running at http://localhost:${PORT}`);
-});
+/* ── Start server (only when run directly, not from tests) ── */
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Ashbrook Library running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

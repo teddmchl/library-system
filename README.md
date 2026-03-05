@@ -15,7 +15,6 @@ Built with **Express**, **MongoDB**, and **EJS** as a showcase of real-world Nod
 - **Loan System** — check-out with availability guards, duplicate-loan prevention, one-click returns
 - **Admin CRUD** — create, edit, and safely delete books and members with validation and flash feedback
 - **Overdue Detection** — automatic cron job syncs overdue statuses every 6 hours without a user trigger
-- **CSV Export** — (via Deployments view) — coming soon
 
 ## Technology Stack
 

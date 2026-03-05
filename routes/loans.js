@@ -4,12 +4,15 @@ const Loan = require("../models/Loan");
 const Book = require("../models/Book");
 const Member = require("../models/Member");
 
+const VALID_STATUSES = ["active", "overdue", "returned", "all"];
+
 /* ── GET /loans — all active loans ── */
 router.get("/", async (req, res) => {
   try {
     const { status = "active", sort = "due" } = req.query;
+    const statusParam = VALID_STATUSES.includes(status) ? status : "active";
 
-    const query = status === "all" ? {} : { status };
+    const query = statusParam === "all" ? {} : { status: statusParam };
     const sortMap = {
       due: { dueAt: 1 },
       recent: { borrowedAt: -1 },
@@ -33,7 +36,7 @@ router.get("/", async (req, res) => {
       title: "Loans",
       loans,
       query: req.query,
-      activeStatus: status,
+      activeStatus: statusParam,
     });
   } catch (err) {
     req.flash("error", "Could not load loans");
@@ -114,9 +117,10 @@ router.post("/:id/return", async (req, res) => {
     const memberName = loan.member?.name || "Member";
     req.flash("success", `"${bookTitle}" returned by ${memberName}`);
 
-    // Redirect back to where they came from
+    // Redirect back — only allow same-origin paths (prevent open redirect)
     const ref = req.get("Referrer") || "/loans";
-    res.redirect(ref);
+    const safeRef = ref.startsWith("/") ? ref : "/loans";
+    res.redirect(safeRef);
   } catch (err) {
     req.flash("error", "Return failed");
     res.redirect("/loans");

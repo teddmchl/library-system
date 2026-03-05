@@ -2,18 +2,34 @@ const express = require("express");
 const router = express.Router();
 const Member = require("../models/Member");
 const Loan = require("../models/Loan");
+const escapeRegex = require("../utils/escapeRegex");
+
+const MEMBER_FIELDS = ["name", "email", "phone", "address", "notes", "status"];
+const VALID_STATUSES = ["active", "suspended", "expired"];
+
+/** Pick only allowed fields from req.body */
+const pickFields = (body, fields) => {
+  const obj = {};
+  for (const f of fields) {
+    if (body[f] !== undefined && body[f] !== "") obj[f] = body[f];
+  }
+  return obj;
+};
 
 /* ── GET /members ── */
 router.get("/", async (req, res) => {
   try {
     const { q, status } = req.query;
     const query = {};
-    if (q) query.$or = [
-      { name: { $regex: q, $options: "i" } },
-      { email: { $regex: q, $options: "i" } },
-      { memberNumber: { $regex: q, $options: "i" } },
-    ];
-    if (status) query.status = status;
+    if (q) {
+      const safe = escapeRegex(q.trim());
+      query.$or = [
+        { name: { $regex: safe, $options: "i" } },
+        { email: { $regex: safe, $options: "i" } },
+        { memberNumber: { $regex: safe, $options: "i" } },
+      ];
+    }
+    if (status && VALID_STATUSES.includes(status)) query.status = status;
 
     const members = await Member.find(query).sort({ name: 1 });
 
@@ -44,7 +60,8 @@ router.get("/new", (req, res) => {
 /* ── POST /members ── */
 router.post("/", async (req, res) => {
   try {
-    const member = await Member.create(req.body);
+    const data = pickFields(req.body, MEMBER_FIELDS);
+    const member = await Member.create(data);
     req.flash("success", `Welcome, ${member.name}! Member #${member.memberNumber} created.`);
     res.redirect(`/members/${member._id}`);
   } catch (err) {
@@ -88,7 +105,8 @@ router.get("/:id/edit", async (req, res) => {
 /* ── PUT /members/:id ── */
 router.put("/:id", async (req, res) => {
   try {
-    await Member.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
+    const data = pickFields(req.body, MEMBER_FIELDS);
+    await Member.findByIdAndUpdate(req.params.id, data, { runValidators: true });
     req.flash("success", "Member updated");
     res.redirect(`/members/${req.params.id}`);
   } catch (err) {

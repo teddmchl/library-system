@@ -2,14 +2,24 @@ const express = require("express");
 const router = express.Router();
 const Book = require("../models/Book");
 const Loan = require("../models/Loan");
-
-/** Escape special regex characters to prevent ReDoS attacks */
-const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegex = require("../utils/escapeRegex");
 
 const GENRES = [
   "Fiction","Non-Fiction","Science","History","Biography",
   "Philosophy","Poetry","Mystery","Science Fiction","Children","Art","Technology",
 ];
+
+const BOOK_FIELDS = ["title", "author", "isbn", "genre", "description", "publisher", "publishedYear", "pages", "copies", "language", "location", "coverColor"];
+const HEX_COLOR = /^#[0-9a-fA-F]{3,6}$/;
+
+/** Pick only allowed fields from req.body */
+const pickFields = (body, fields) => {
+  const obj = {};
+  for (const f of fields) {
+    if (body[f] !== undefined && body[f] !== "") obj[f] = body[f];
+  }
+  return obj;
+};
 
 /* ── GET /books — catalog with search & filter ── */
 router.get("/", async (req, res) => {
@@ -57,8 +67,11 @@ router.get("/new", (req, res) => {
 /* ── POST /books ── */
 router.post("/", async (req, res) => {
   try {
-    const copies = parseInt(req.body.copies) || 1;
-    const book = await Book.create({ ...req.body, copies, availableCopies: copies });
+    const data = pickFields(req.body, BOOK_FIELDS);
+    data.copies = parseInt(data.copies) || 1;
+    data.availableCopies = data.copies;
+    if (data.coverColor && !HEX_COLOR.test(data.coverColor)) delete data.coverColor;
+    const book = await Book.create(data);
     req.flash("success", `"${book.title}" added to the catalogue`);
     res.redirect(`/books/${book._id}`);
   } catch (err) {
@@ -102,12 +115,14 @@ router.put("/:id", async (req, res) => {
     const book = await Book.findById(req.params.id);
     if (!book) { req.flash("error", "Book not found"); return res.redirect("/books"); }
 
-    const newCopies = parseInt(req.body.copies) || book.copies;
+    const data = pickFields(req.body, BOOK_FIELDS);
+    const newCopies = parseInt(data.copies) || book.copies;
     const diff = newCopies - book.copies;
-    req.body.availableCopies = Math.max(0, book.availableCopies + diff);
-    req.body.copies = newCopies;
+    data.availableCopies = Math.max(0, book.availableCopies + diff);
+    data.copies = newCopies;
+    if (data.coverColor && !HEX_COLOR.test(data.coverColor)) delete data.coverColor;
 
-    await Book.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
+    await Book.findByIdAndUpdate(req.params.id, data, { runValidators: true });
     req.flash("success", "Book updated");
     res.redirect(`/books/${req.params.id}`);
   } catch (err) {
